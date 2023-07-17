@@ -27,4 +27,5 @@ if __name__ == "__main__":
 
     print("port number")
     print(port)
-    app.run(port=port)
+    # app.run(port=port)
+    app.run(debug=False, host='0.0.0.0')
