@@ -6,26 +6,23 @@ from dotenv import load_dotenv
 load_dotenv('.env')
 
 app = Flask(__name__)
-CORS(app, resources={r"/predict": {"origins": "https://make-predictions.com"}})
+code_backend_url = os.environ.get("CODE_BACKEND_URL")
+
+CORS(app, resources={r"/": {"origins": code_backend_url}})
 
 
-@app.route("/predict", methods=["GET"])
+@app.route("/api/v1/predict", methods=["POST"])
 def predict():
-    # Perform prediction logic here
-    data = request.json()
+    print("request.json")
+    print(request.json)
 
-    # Example response
     response = {"result": "Prediction result"}
 
-    return jsonify(response)
-
     print("Prediction server running")
+    return jsonify(response)
 
 
 if __name__ == "__main__":
     port = os.environ.get("PORT")
 
-    print("port number")
-    print(port)
-    # app.run(port=port)
     app.run(debug=False, host='0.0.0.0')
