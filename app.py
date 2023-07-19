@@ -44,30 +44,37 @@ model.fit(X_encoded, y)
 
 CORS(app, resources={r"/": {"origins": code_backend_url}})
 
-# Todo: function to return particular subject prediction
-# Todo: function to determine language spoken by student
+
+def subject_mark(sample_subject, prediction_list):
+    subjects = ['Math', 'Physics', 'Chemistry']
+    for subject, mark in zip(subjects, prediction_list[0]):
+        if sample_subject == subject:
+            print(f"Predicted mark in {subject}: {mark:.2f}")
+            return mark
+
+
+def language_spoken(region):
+    if region == "Western":
+        return "Runyankole"
+    if region == "Central":
+        return "Luganda"
+    if region == "Eastern":
+        return "Ateso"
+    if region == "Northern":
+        return "Acholi"
 
 
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
-    print("request.json")
-    print(request.json)
     prediction_request = request.json
+    print(prediction_request)
 
-    # sample_input = pd.DataFrame({
-    #     'Age': [20],
-    #     'Gender': ['Male'],
-    #     'Region': ['Northern'],
-    #     'District': ['Mbarara'],
-    #     'Language Spoken by Student': ['Runyankole'],
-    #     'Attendance': [0.90]
-    # })
     sample_input = pd.DataFrame({
         'Age': [prediction_request["age"]],
         'Gender': [prediction_request["gender"]],
         'Region': [prediction_request["region"]],
         'District': [prediction_request["district"]],
-        'Language Spoken by Student': ['Runyankole'],
+        'Language Spoken by Student': [language_spoken(prediction_request["region"])],
         'Attendance': [prediction_request["attendance"]]
     })
     sample_input_encoded = preprocessor.transform(sample_input)
@@ -76,7 +83,13 @@ def predict():
     prediction = model.predict(sample_input_encoded)
     print("Prediction:", prediction)
 
-    return jsonify({"status": "success"})
+    subject_prediction_mark = round(subject_mark(
+        prediction_request["subject"], prediction))
+
+    print("subject_prediction_mark")
+    print(subject_prediction_mark)
+
+    return jsonify({"subject": prediction_request["subject"], "predicted_mark": subject_prediction_mark})
 
 
 if __name__ == "__main__":
