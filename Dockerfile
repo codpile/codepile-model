@@ -1,6 +1,6 @@
 FROM alpine:3.18
 
-RUN apk add --no-cache python3=3.9.7-r3 python3-dev=3.9.7-r3 py3-pip=20.3.4-r1
+RUN apk add --no-cache python3=3.9 python3-dev=3.9 py3-pip
 
 WORKDIR /app
 
