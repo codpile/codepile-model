@@ -1,6 +1,6 @@
 FROM alpine:3.18
 
-RUN apk add --no-cache python3=3.9 python3-dev=3.9 py3-pip
+RUN apk add --no-cache python3 python3-dev py3-pip
 
 WORKDIR /app
 
@@ -16,3 +16,4 @@ COPY . .
 EXPOSE 1000
 
 CMD ["/app/venv/bin/gunicorn", "--bind", "0.0.0.0:1000", "app:app"]
+
