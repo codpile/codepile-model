@@ -3,5 +3,12 @@
     "editor.defaultFormatter": "ms-python.autopep8"
   },
   "python.formatting.provider": "none",
-  "cSpell.words": ["dotenv", "jsonify"]
+  "cSpell.words": [
+    "dotenv",
+    "joblib",
+    "jsonify",
+    "Mbarara",
+    "Runyankole",
+    "sklearn"
+  ]
 }
