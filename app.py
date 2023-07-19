@@ -5,7 +5,6 @@ import pickle
 from sklearn.linear_model import LinearRegression
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
-# from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -16,68 +15,66 @@ load_dotenv('.env')
 
 app = Flask(__name__)
 code_backend_url = os.environ.get("CODE_BACKEND_URL")
-# model = pickle.load(open('model.pkl', 'rb'))
-# model = joblib.load('model.pkl')
 
+df = pd.read_csv('std.csv')
+df
+df['Average Math'] = (df['Math Term 1'] +
+                      df['Math Term 2'] + df['Math Term 3']) / 3
+df['Average Chemistry'] = (df['Chemistry Term 1'] +
+                           df['Chemistry Term 2'] + df['Chemistry Term 3']) / 3
+df['Average Physics'] = (df['Physics Term 1'] +
+                         df['Physics Term 2'] + df['Physics Term 3']) / 3
 
-# Load the training data
-df_train = pd.read_csv('std.csv')
+X = df[['Age', 'Gender', 'Region', 'District',
+        'Language Spoken by Student', 'Attendance']]
+y = df[['Average Math', 'Average Physics', 'Average Chemistry']]
 
-# Extract the input features and target variables from the training data
-X_train = df_train[['Age', 'Gender', 'Region', 'District',
-                    'Language Spoken by Student', 'Attendance']]
-y_train = df_train[['Average Math', 'Average Physics', 'Average Chemistry']]
-
-# Define the categorical columns for one-hot encoding
 categorical_cols = ['Gender', 'Region',
                     'District', 'Language Spoken by Student']
 
-# Initialize the ColumnTransformer with the desired transformations
 preprocessor = ColumnTransformer(
     transformers=[('encoder', OneHotEncoder(), categorical_cols)],
     remainder='passthrough'
 )
+X_encoded = preprocessor.fit_transform(X)
 
-# Fit the ColumnTransformer on the training data
-preprocessor.fit(X_train)
+model = joblib.load("model.pkl")
+model.fit(X_encoded, y)
 
-# # Save the fitted preprocessor for later use
-# joblib.dump(preprocessor, 'preprocessor.pkl')
-# # Load the fitted preprocessor (if needed in a different script)
-# preprocessor = joblib.load('preprocessor.pkl')
 
 CORS(app, resources={r"/": {"origins": code_backend_url}})
+
+# Todo: function to return particular subject prediction
+# Todo: function to determine language spoken by student
 
 
 @app.route("/api/v1/predict", methods=["POST"])
 def predict():
     print("request.json")
     print(request.json)
+    prediction_request = request.json
 
-    print("model")
-    print(model)
-
-    # Sample input data
+    # sample_input = pd.DataFrame({
+    #     'Age': [20],
+    #     'Gender': ['Male'],
+    #     'Region': ['Northern'],
+    #     'District': ['Mbarara'],
+    #     'Language Spoken by Student': ['Runyankole'],
+    #     'Attendance': [0.90]
+    # })
     sample_input = pd.DataFrame({
-        'Age': [16],
-        'Gender': ['Female'],
-        'Region': ['Eastern'],
-        'District': ['Mbarara'],
+        'Age': [prediction_request["age"]],
+        'Gender': [prediction_request["gender"]],
+        'Region': [prediction_request["region"]],
+        'District': [prediction_request["district"]],
         'Language Spoken by Student': ['Runyankole'],
-        'Attendance': [0.87]
+        'Attendance': [prediction_request["attendance"]]
     })
-
-    # Transform the sample input using the fitted ColumnTransformer
     sample_input_encoded = preprocessor.transform(sample_input)
 
-    # Load the trained model
-    model = joblib.load('model.pkl')
-
-    # Make predictions using the model
+    # Make a prediction
     prediction = model.predict(sample_input_encoded)
-
-    print("Prediction made")
-    print(prediction)
+    print("Prediction:", prediction)
 
     return jsonify({"status": "success"})
 
